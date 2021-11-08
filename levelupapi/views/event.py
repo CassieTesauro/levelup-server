@@ -1,13 +1,13 @@
 """View module for handling requests about events"""
 from django.core.exceptions import ValidationError
 from rest_framework import status
-from django.http import HttpResponseServerError
+#from django.http import HttpResponseServerError  NOT BEING USED YET
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
-from levelupapi.models import Event, EventGamer, Gamer
-from django.contrib.auth.models import User
+from levelupapi.models import Event, Game, Gamer  
+from django.contrib.auth.models import User  # remember- user is from django, it's not a model we made specifically for this program 
 
 
 
@@ -128,7 +128,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~ UPDATE METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~ UPDATE METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
     #The update method is a lot the retreive method because we are dealing with a single event
@@ -199,11 +199,11 @@ class EventSerializer(serializers.ModelSerializer):              # STEP_1: defin
                                                                         #case the 'organizer' field from class Meta).  Call a new serializer called GamerSerializer.
                 
     class Meta:                                                  
-        model = Event                                            # STEP_2A: make the Meta class to hold the model and model fields
-        fields = ['id', 'organizer', 'game', 'date', 'time' ]    # STEP_2B: We only want to pass back first/last name of organizer, which requires nested serializers, so we move to step 3      
-        depth = 1                                                # STEP_2C: Think of depth like JS expand.  Without it, a GET will only return the id number for the 'game' field.
-                                                                            # But depth one will return everything for the 'game' field (id, title, maker, num of players, skill level, game type, gamer) 
-                                                                            # The bigger the depth number, the more gets embedded.  If you set depth = 2, you'd get back gametype and gamer expanded.
+        model = Event                                                          # STEP_2A: make the Meta class to hold the model and model fields
+        fields = ['id', 'organizer', 'game', 'date', 'time', 'description']    # STEP_2B: We only want to pass back first/last name of organizer, which requires nested serializers, so we move to step 3      
+        depth = 1                                                              # STEP_2C: Think of depth like JS expand.  Without it, a GET will only return the id number for the 'game' field.
+                                                                                    # But depth one will return everything for the 'game' field (id, title, maker, num of players, skill level, game type, gamer) 
+                                                                                    # The bigger the depth number, the more gets embedded.  If you set depth = 2, you'd get back gametype and gamer expanded.
 
 
 
