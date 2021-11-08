@@ -89,7 +89,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
    
     #The retrieve method is a lot like list, except retrieve will GET a single event. 
 
-    def retrieve(self, request, pk)             # The retrieve method takes an extra argument - pk - because 
+    def retrieve(self, request, pk):             # The retrieve method takes an extra argument - pk - because 
                                                 # you are getting a single specific event
 
         event = Event.objects.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
@@ -111,7 +111,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
     # The destroy method looks similar to the retrieve method, except we're deleting a single event instead of 
     # getting and returning it.  That means we won't involve any serializers.
 
-    def destroy(self, request, pk)             # The retrieve method takes an extra argument - pk - because 
+    def destroy(self, request, pk):             # The retrieve method takes an extra argument - pk - because 
                                                 # you are getting a single specific event
 
         event = Event.objects.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
@@ -124,6 +124,40 @@ class EventView(ViewSet): #holds the functions to create, list, etc
                                  # status is the HTTP code that signals a successful deletion- '204 no content'
 
 
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~ UPDATE METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+    #The update method is a lot the retreive method because we are dealing with a single event
+
+    def update(self, request, pk):             # The update method takes an extra argument - pk - because 
+                                               # you are updating a single specific event
+
+        event = Event.objects.get(pk=pk)        # Make a new variable called event.  Use the ORM .get method 
+                                                # and pass the pk of the event you want into it.
+
+        event.date = request.data['date']       # Now that we grabbed the correct event, we do our updates.
+                                                # Here, we're updating the event's date.
+                                                # We get the updated value for 'date' from the request.  
+                                                # The request is in the data form of a dictionary so we need 
+                                                # bracket notation to get to the 'date' key:value.
+                                            
+        event.time = request.time['time']                       # Here we're updating the time
+        event.description = request.description['description']  # Here we're updating the description
+
+        event.game = Game.objects.get(pk=request.data['gameId'])   # Here we're updating the game.  This one is trickier.
+                                                                   # We have to grab the game object or we'll get an error
+                                                                   # use the .get ORM on the Game model and pass the gameId from 
+                                                                   # the update request into the ORM as the pk
+        
+        event.save()   # After we've done the changes above, we call the save method on the event
+
+        return Response(None, status=status.HTTP_204_NO_CONTENT)   # Return will be the result of the .save().  
+                                 # 'None' refers to the data included in the return.  
+                                 # status is the HTTP code that signals a successful update- '204 no content'
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
