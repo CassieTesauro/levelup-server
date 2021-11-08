@@ -92,7 +92,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
     def retrieve(self, request, pk)             # The retrieve method takes an extra argument - pk - because 
                                                 # you are getting a single specific event
 
-        event = Event.object.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
+        event = Event.objects.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
                                                 # and pass the pk of the event you want into it.
 
         event_serializer = EventSerializer(event, context={'request': request}) # Make a new variable 'event_serializer'.  
@@ -100,6 +100,30 @@ class EventView(ViewSet): #holds the functions to create, list, etc
                                                                                 # variable you just made and the context info for the headers
 
         return Response(event_serializer.data)   #return will be the result of the EventSerializer call inside event_serializer variable
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~ DESTROY METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+    # The destroy method looks similar to the retrieve method, except we're deleting a single event instead of 
+    # getting and returning it.  That means we won't involve any serializers.
+
+    def destroy(self, request, pk)             # The retrieve method takes an extra argument - pk - because 
+                                                # you are getting a single specific event
+
+        event = Event.objects.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
+                                                # and pass the pk of the event you want into it.
+
+        event.delete()        #Call the delete() ORM on the event variable you just made
+ 
+        return Response(None, status=status.HTTP_204_NO_CONTENT)   # Return will be the result of the .delete().  
+                                 # 'None' refers to the data included in the return.  
+                                 # status is the HTTP code that signals a successful deletion- '204 no content'
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
