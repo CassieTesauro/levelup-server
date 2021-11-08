@@ -1,0 +1,26 @@
+[
+    {
+        "model": "levelupapi.game",
+        "pk": 1,
+        "fields": {
+            "title": "Trouble",
+            "maker": "Hasbro",
+            "gamer": "1",
+            "number_of_players": 4,
+            "skill_level": 2,
+            "game_type": 1
+        }
+    },
+    {
+        "model": "levelupapi.game",
+        "pk": 2,
+        "fields": {
+            "title": "Mousetrap",
+            "maker": "Hasbro",
+            "gamer": "1",
+            "number_of_players": 5,
+            "skill_level": 1,
+            "game_type": 1
+        }
+    }
+]
