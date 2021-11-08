@@ -83,6 +83,24 @@ class EventView(ViewSet): #holds the functions to create, list, etc
         return Response(events_serializer.data)   # The return will be the data from the serialized list of events
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~ RETRIEVE METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+    #The retrieve method is a lot like list, except retrieve will GET a single event. 
+
+    def retrieve(self, request, pk)             # The retrieve method takes an extra argument - pk - because 
+                                                # you are getting a single specific event
+
+        event = Event.object.get(pk=pk)         # Make a new variable called event.  Use the ORM .get method 
+                                                # and pass the pk of the event you want into it.
+
+        event_serializer = EventSerializer(event, context={'request': request}) # Make a new variable 'event_serializer'.  
+                                                                                # In it, call the EventSerializer and pass in the event 
+                                                                                # variable you just made and the context info for the headers
+
+        return Response(event_serializer.data)   #return will be the result of the EventSerializer call inside event_serializer variable
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~ SERIALIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
