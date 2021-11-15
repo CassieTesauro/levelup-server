@@ -165,26 +165,50 @@ class EventView(ViewSet): #holds the functions to create, list, etc
 # ~~~~ CUSTOM ACTION~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Now we add a custom action.  That means we want the user to be able 
-# to make a more specific request that causes an specific response.  
+# Now we add a custom action.  That means we want the user to be able to make a more specific request that causes an specific response.  
 # The custom action is: the user can sign up or cancel their attendance in an event using this url:
+
 # http://localhost:8000/events/2/signup
 # where 2 is will be the event's pk; signup is the custom event's name.  Whatever we name it, that's what will appear here in the url 
+
 # to build a custom event, you need a 'decorator'.  Then you set up what the event will do
 # this event will act differently based on a client-side request for post or delete
 
-    @action(methods=['post', 'delete'], detail=True)  # @action is a 'decorator' that turns this method into a resource that we can hit on the front end. We have to import @action at the top of the file. # We specify which methods it will take [post and delete] # The other attribute we pass in is detail. We set it equal to True.  This is what gives us the pk of the event inside the url.
-    def signup(self, request, pk):  # this is the custome action.  We named it signup. It has 2 parameters- self, the request, and pk (we need pk since detail=True on the decorator)
-        gamer = Gamer.objects.get(user=request.auth.user)# We grab the gamer that's logged in.  We use the .get ORM  on the Gamer model and get the object where the user equals the logged in user (user=request.auth.user)
-        event =  Event.objects.get(pk=pk) # We grab the correct event by the event pk
-        # The code to grab the gamer and event will happen whether our custom action is a post or delete request.  Then, there are if statements
-        if request.method == 'POST': #If the request is POST aka a user is signing up for an event
-            event.attendees.add(gamer) #add is a function on the many to many field that adds an object to that list.  Here, we're adding the gamer object we grabbed up above and adding it to the attendees objects.  attendees is a many to many field on event.  
-            return Response({}, status=status.HTTP_201_CREATED) # we don't really need to return much because the front end will rerender the event list when the button is clicked.  Just an empty object and status code.
+    @action(methods=['post', 'delete'], detail=True)        # @action is a 'decorator' that turns this method into a resource that we can hit on the front end. 
+                                                            # We have to import @action at the top of the file. 
+                                                            # We specify which methods it will take [post and delete] 
+                                                            # The other attribute we pass in is detail. We set it equal to True.  This is what gives us the pk of the event inside the url.
+    
+    def signup(self, request, pk):                          # this is the custome action.  We named it signup. 
+                                                            # It has 2 parameters- self, the request, and pk (we need pk since detail=True on the decorator)
+        
+        gamer = Gamer.objects.get(user=request.auth.user)   # We grab the gamer that's logged in.  We use the .get ORM  on the Gamer model 
+                                                            # and get the object where the user equals the logged in user (user=request.auth.user)
+        
+        event =  Event.objects.get(pk=pk)                   # We grab the correct event by the event pk
+
+        # The code to grab the gamer and event will happen whether our custom action is a post or delete request.  Then, there are if statements:
+        
+        if request.method == 'POST':                                #If the request is POST aka a user is signing up for an event
+            
+            event.attendees.add(gamer)                              # add is a function on the many to many field that adds an object to that list.  
+                                                                    # Here, we're adding the gamer object we grabbed up above and adding it to the attendees objects.  
+                                                                    # attendees is a many to many field on event.  
+            
+            return Response({}, status=status.HTTP_201_CREATED)      # we don't really need to return much because the front end will rerender the event list when the button is clicked.  
+                                                                     # Just an empty object and status code.
+        
         if request.method == "DELETE":
-            event.attendee.remove(gamer) #.remove is a function on the many to many field to remove the gamer object
-            return Response({}, status=status.HTTP_204_NO_CONTENT) #response is an empty dictionary and status code
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            event.attendee.remove(gamer)                                #.remove is a function on the many to many field to remove the gamer object
+            return Response({}, status=status.HTTP_204_NO_CONTENT)      #response is an empty dictionary and status code
+
+        #The next step is to go to the front end code.  
+        # In eventmanager.js we'll need a joinEvent function that fetches the url from our custom event and has a POST method.
+        # In eventlist.js, we need a 'join this event' button for users to click.
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~ SERIALIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
