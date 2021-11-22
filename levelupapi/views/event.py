@@ -28,7 +28,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
                                                              #It will let us grab the user via their auth token.  
                                                              #Since we're using the gamer model, we have to import Gamer from levelupapi.models
 
-         
+         #vvvvvv part in bracket should be however its named in front end; when testing in postman use front end formatting for property names but use backend model to know what properties to include
         game = Game.objects.get(pk=request.data['gameId'])     # Next we need to grab the game object for the correct game (monopoly, etc).
                                                                 # We use an ORM method on the Game model to grab the correct game object 
                                                                 # For example, if it's a Risk event, grab the game object for Risk
@@ -59,28 +59,53 @@ class EventView(ViewSet): #holds the functions to create, list, etc
             return Response({'message': ex.args[0]}, status=status.HTTP_400_BAD_REQUEST) #The dictionary will have a 'message' key/property, and it's value will be ??????? and a 400 status message
 
 
+    def create(self, request):
+       
+         organizer = Gamer.objects.get(user=request.auth.user)
+         game = Game.objects.get(pk=request.data['gameId'])
+         
+         try:
+            event = Event.objects.create(
+                game=game,                  
+                organizer=organizer,        
+                description=request.data['description'], 
+                date=request.data['date'], 
+                time=request.data['time'] 
+            ) 
+            
+            event_serializer = EventSerializer(event)
+            return Response(event_serializer.data, status=status.HTTP_201_CREATED)
+         
+         except ValidationError as ex:   
+            return Response({'message': ex.args[0]}, status=status.HTTP_400_BAD_REQUEST)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~ LIST METHOD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def list(self, request):   # Now we need to define how to handle a GET for all events.  That means we use the 'list' method
-                               # The list method holds 2 parameters: self and request
+    def list(self, request):
+        """Handle GET requests to events resource
 
-        """Handle GET operations for all events
-        Returns: Response -- JSON serialized events
+        Returns:
+            Response -- JSON serialized list of events
         """
-        events = Event.objects.all() # Make a variable 'events' and grab all events from the database.
-                                     # Event with uppercase E is the event Model.  
-                                     # Event.objects means the objects in the database that match the Event model
-                                     # .all() is an ORM that will grab all objects in the database that match the Event model
-        
-        events_serializer = EventSerializer(events, many=True) # Make a variable 'event_serializer' variable to hold a call for EventSerializer.
-                                                               # For the arguments, pass in the events variable we just 
-                                                               # made, many=True because 'events' will be a list of events, and the info we 
-                                                               # need for the header (the context key:value pair)
-        
-        return Response(events_serializer.data)   # The return will be the data from the serialized list of events
+        # Get the current authenticated user
+        gamer = Gamer.objects.get(user=request.auth.user)
+        events = Event.objects.all()
+
+        # Set the `joined` property on every event
+        for event in events:
+            # Check to see if the gamer is in the attendees list on the event
+            event.joined = gamer in event.attendees.all()
+
+        # Support filtering events by game
+        game = self.request.query_params.get('gameId', None)
+        if game is not None:
+            events = events.filter(game__id=type)
+
+        serializer = EventSerializer(
+            events, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 
@@ -179,7 +204,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
                                                             # We specify which methods it will take [post and delete] 
                                                             # The other attribute we pass in is detail. We set it equal to True.  This is what gives us the pk of the event inside the url.
     
-    def signup(self, request, pk):                          # this is the custome action.  We named it signup. 
+    def signup(self, request, pk):                          # this is the custom action.  We named it signup. 
                                                             # It has 2 parameters- self, the request, and pk (we need pk since detail=True on the decorator)
         
         gamer = Gamer.objects.get(user=request.auth.user)   # We grab the gamer that's logged in.  We use the .get ORM  on the Gamer model 
@@ -199,7 +224,7 @@ class EventView(ViewSet): #holds the functions to create, list, etc
                                                                      # Just an empty object and status code.
         
         if request.method == "DELETE":
-            event.attendee.remove(gamer)                                #.remove is a function on the many to many field to remove the gamer object
+            event.attendees.remove(gamer)                                #.remove is a function on the many to many field to remove the gamer object
             return Response({}, status=status.HTTP_204_NO_CONTENT)      #response is an empty dictionary and status code
 
         #The next step is to go to the front end code.  
@@ -245,10 +270,12 @@ class EventSerializer(serializers.ModelSerializer):              # STEP_1: defin
 
     organizer = GamerSerializer()                               # STEP_3: make variable called organizer (must match up with the field we are building a nested serializer for, in this 
                                                                         #case the 'organizer' field from class Meta).  Call a new serializer called GamerSerializer.
-                
+
+    joined = serializers.BooleanField(required=False) 
+
     class Meta:                                                  
         model = Event                                                          # STEP_2A: make the Meta class to hold the model and model fields
-        fields = ['id', 'organizer', 'game', 'date', 'time', 'description', 'attendees']    # STEP_2B: We only want to pass back first/last name of organizer, which requires nested serializers, so we move to step 3      
+        fields = ['id', 'organizer', 'game', 'date', 'time', 'description', 'attendees', 'joined']    # STEP_2B: We only want to pass back first/last name of organizer, which requires nested serializers, so we move to step 3      
         depth = 1                                                              # STEP_2C: Think of depth like JS expand.  Without it, a GET will only return the id number for the 'game' field.
                                                                                     # But depth one will return everything for the 'game' field (id, title, maker, num of players, skill level, game type, gamer) 
                                                                                     # The bigger the depth number, the more gets embedded.  If you set depth = 2, you'd get back gametype and gamer expanded.
